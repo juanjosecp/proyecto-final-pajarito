@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Graficación - SAO Link Start</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
+    
+    :root {
+      --bg-dark: #111111;
+      --text-main: #ffffff;
+      --text-muted: #aaaaaa;
+      --border-color: rgba(255, 255, 255, 0.2);
+      --accent-color: #f39c12; /* SAO Orange */
+      --ring-color: rgba(243, 156, 18, 0.5);
+    }
+    
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100vh;
+      background-color: var(--bg-dark);
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      color: var(--text-main);
+      font-family: 'Ubuntu', sans-serif;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, rgba(0,0,0,0.8), transparent);
+      z-index: 20;
+      pointer-events: none;
+    }
+    
+    .logo-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 5px;
+      color: var(--accent-color);
+      text-shadow: 0 0 10px var(--accent-color);
+      text-transform: uppercase;
+    }
+    
+    /* RADIAL LAYOUT CONTAINER */
+    .hud-wrapper {
+      position: relative;
+      width: 60vh;
+      height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      box-shadow: 0 0 50px rgba(243, 156, 18, 0.1);
+      border: 1px solid var(--ring-color);
+    }
+
+    /* Outer decorative ring */
+    .hud-wrapper::before {
+      content: '';
+      position: absolute;
+      width: 110%;
+      height: 110%;
+      border-radius: 50%;
+      border: 2px dashed var(--border-color);
+      animation: spin 60s linear infinite;
+      pointer-events: none;
+    }
+    
+    /* Inner decorative ring */
+    .hud-wrapper::after {
+      content: '';
+      position: absolute;
+      width: 90%;
+      height: 90%;
+      border-radius: 50%;
+      border: 1px solid var(--accent-color);
+      opacity: 0.3;
+      animation: spin-reverse 40s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
+
+    .canvas-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      border-radius: 50%;
+      overflow: hidden;
+      z-index: 5;
+    }
+    
+    canvas {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%);
+      object-fit: cover;
+    }
+
+    /* PANELS RADIAL POSITIONING */
+    .panel-section {
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(243, 156, 18, 0.15);
+      z-index: 10;
+      box-sizing: border-box;
+      transition: all 0.3s;
+    }
+    
+    .panel-section:hover {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 25px rgba(243, 156, 18, 0.4), inset 0 0 15px rgba(243, 156, 18, 0.3);
+    }
+
+    /* Position specific panels */
+    .panel-top-left {
+      right: 85%;
+      top: 5%;
+    }
+    .panel-bottom-left {
+      right: 85%;
+      bottom: 5%;
+    }
+    .panel-top-right {
+      left: 85%;
+      top: 5%;
+    }
+    .panel-bottom-right {
+      left: 85%;
+      bottom: 5%;
+    }
+    
+    .section-title {
+      font-size: 0.75rem;
+      color: var(--accent-color);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 2px;
+      font-weight: 700;
+      text-align: center;
+      width: 80%;
+    }
+
+    .synth-btn {
+      display: block;
+      width: 80%;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: 'Ubuntu', sans-serif;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      margin-bottom: 5px;
+    }
+    
+    .synth-btn:hover {
+      background: var(--accent-color);
+      color: #fff;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 10px var(--accent-color);
+    }
+    
+    .synth-btn:active { transform: scale(0.95); }
+
+    .color-btn {
+      flex: 1;
+      padding: 10px 5px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 0.7rem;
+      cursor: pointer;
+      background: rgba(255,255,255,0.05);
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+    .color-btn:hover { border-color: var(--accent-color); box-shadow: 0 0 5px var(--accent-color); }
+    .color-btn:active { transform: scale(0.95); }
+    #color-pink { border-bottom: 3px solid #e74c3c; }
+    #color-blue { border-bottom: 3px solid #3498db; }
+    #color-green { border-bottom: 3px solid #2ecc71; }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      width: 90%;
+    }
+    
+    input[type=range] {
+      width: 80px;
+      -webkit-appearance: none;
+      background: transparent;
+      margin: 0 5px;
+    }
+    input[type=range]:focus { outline: none; }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 2px;
+      cursor: pointer;
+      background: var(--border-color);
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 10px;
+      width: 10px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -4px;
+      box-shadow: 0 0 5px var(--accent-color);
+    }
+
+    .val-display {
+      width: 25px;
+      text-align: right;
+      color: var(--accent-color);
+    }
+
+    .dpad-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 5px;
+      width: 100px;
+      margin: 0 auto;
+    }
+    .dpad-container .synth-btn {
+      padding: 5px;
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    /* RESPONSIVE DESIGN FOR MOBILE */
+    @media (max-width: 800px) {
+      body {
+        display: block;
+        overflow-y: auto;
+        padding-top: 80px;
+        padding-bottom: 40px;
+      }
+
+      .topbar {
+        position: fixed;
+      }
+
+      .hud-wrapper {
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: none;
+        box-shadow: none;
+        gap: 20px;
+      }
+
+      .hud-wrapper::before, .hud-wrapper::after {
+        display: none;
+      }
+
+      .canvas-container {
+        width: 60vw;
+        height: 60vw;
+        max-width: 280px;
+        max-height: 280px;
+        border: 2px solid var(--accent-color);
+        box-shadow: 0 0 20px var(--ring-color);
+        flex-shrink: 0;
+        margin-bottom: 10px;
+      }
+
+      .panel-section {
+        position: relative !important;
+        top: auto !important; bottom: auto !important; left: auto !important; right: auto !important;
+        transform: none !important;
+        width: 95%;
+        max-width: 500px;
+        height: auto;
+        border-radius: 12px;
+        padding: 25px;
+      }
+
+      .section-title { font-size: 1.1rem; margin-bottom: 15px; }
+      .synth-btn { font-size: 1rem; padding: 12px; width: 100%; }
+      .color-btn { font-size: 1rem; padding: 15px; }
+      .control-row { font-size: 1rem; width: 100%; margin-bottom: 15px; }
+      input[type=range] { width: auto; flex: 1; }
+      input[type=range]::-webkit-slider-thumb { width: 20px; height: 20px; margin-top: -8px; }
+      .val-display { font-size: 1rem; width: 45px; }
+      #file-name-base, #file-name-movil { font-size: 0.8rem !important; margin-top: 5px; margin-bottom: 15px !important; }
+      
+      .dpad-container { width: 180px; gap: 10px; margin: 10px auto; }
+      .dpad-container .synth-btn { font-size: 1.5rem; padding: 15px; width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra Superior -->
+  <header class="topbar">
+    <div class="logo-title">INICIAR SISTEMA</div>
+  </header>
+
+  <div class="hud-wrapper">
+    
+    <!-- Area del Visor (Canvas Circular) -->
+    <main class="canvas-container" id="canvas-container">
+      <canvas id="circlechart" width="800" height="800"></canvas>
+    </main>
+
+    <!-- 2 a la izquierda -->
+    <div class="panel-section panel-top-left">
+      <div class="section-title">ARCHIVOS DEL SISTEMA</div>
+      <label for="file-input-base" class="synth-btn">CARGAR BASE</label>
+      <input type="file" id="file-input-base" accept=".txt,.dat,.obj" style="display: none;" />
+      <div id="file-name-base" style="font-size:0.55rem; color:var(--text-muted); text-align:center; margin-bottom:5px;">&lt; VACÍO &gt;</div>
+      
+      <label for="file-input-movil" class="synth-btn">CARGAR TAPA</label>
+      <input type="file" id="file-input-movil" accept=".txt,.dat,.obj" style="display: none;" />
+      <div id="file-name-movil" style="font-size:0.55rem; color:var(--text-muted); text-align:center;">&lt; VACÍO &gt;</div>
+    </div>
+
+    <div class="panel-section panel-bottom-left">
+       <div class="section-title">PALETA DE COLOR</div>
+       <div style="display: flex; flex-direction: column; gap: 6px; width: 80%;">
+          <button id="color-pink" class="color-btn">ROJO</button>
+          <button id="color-blue" class="color-btn">AZUL</button>
+          <button id="color-green" class="color-btn">VERDE</button>
+       </div>
+    </div>
+
+    <!-- 2 a la derecha -->
+    <div class="panel-section panel-top-right">
+       <div class="section-title">ILUMINACIÓN</div>
+       <div class="control-row">
+         <label>EJE-X</label>
+         <input type="range" id="light-dir-x" min="-1" max="1" step="0.1" value="-0.5">
+         <span class="val-display" id="val-light-dir-x">-0.5</span>
+       </div>
+       <div class="control-row">
+         <label>BRILLO</label>
+         <input type="range" id="light-bright" min="-2" max="1" step="0.1" value="-1">
+         <span class="val-display" id="val-light-bright">-1.0</span>
+       </div>
+       <div class="control-row">
+         <label>SOMBRA</label>
+         <input type="range" id="light-shadow" min="0.1" max="5" step="0.1" value="2">
+         <span class="val-display" id="val-light-shadow">2.0</span>
+       </div>
+    </div>
+
+    <div class="panel-section panel-bottom-right">
+      <div class="section-title">ROTACIÓN</div>
+      <div class="dpad-container">
+        <div></div>
+        <button class="synth-btn" id="btn-rot-up">▲</button>
+        <div></div>
+        <button class="synth-btn" id="btn-rot-left">◄</button>
+        <div style="display: flex; justify-content: center; align-items: center; color: var(--accent-color); font-size: 0.8rem;">●</div>
+        <button class="synth-btn" id="btn-rot-right">►</button>
+        <div></div>
+        <button class="synth-btn" id="btn-rot-down">▼</button>
+        <div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="./dist/src/index.js" type="module"></script>
+</body>
+</html>

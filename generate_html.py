@@ -1,0 +1,318 @@
+html_content = """<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Graficación - Cyberpunk</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    
+    :root {
+      --bg-dark: #090014;
+      --text-main: #00ffff;
+      --text-muted: #ff00ff;
+      --border-color: #ff00ff;
+      --hover-bg: #1a0033;
+      --accent-green: #39ff14;
+    }
+    
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100vh;
+      background-color: var(--bg-dark);
+      background-image: 
+        linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 0, 255, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+      color: var(--text-main);
+      font-family: 'Orbitron', sans-serif;
+      overflow: hidden;
+    }
+
+    .topbar {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      border-bottom: 4px solid var(--border-color);
+      background: rgba(9, 0, 20, 0.8);
+      box-shadow: 0 0 20px var(--border-color);
+      z-index: 20;
+      position: relative;
+    }
+    
+    .logo-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 5px;
+      color: var(--text-main);
+      text-shadow: 0 0 10px var(--text-main), 0 0 20px var(--text-main);
+      text-transform: uppercase;
+    }
+    
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 60px);
+      position: relative;
+    }
+    
+    .canvas-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 40vh;
+      box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.2);
+    }
+    
+    canvas {
+      border: 2px solid var(--text-main);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+      background: rgba(0,0,0,0.5);
+    }
+
+    .bottom-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      border-top: 4px solid var(--text-main);
+      padding: 20px;
+      background: rgba(10, 0, 30, 0.95);
+      max-height: 45vh;
+      overflow-y: auto;
+      box-shadow: 0 -10px 30px rgba(0, 255, 255, 0.3);
+    }
+
+    .bottom-panel::-webkit-scrollbar { width: 8px; }
+    .bottom-panel::-webkit-scrollbar-track { background: var(--bg-dark); }
+    .bottom-panel::-webkit-scrollbar-thumb { background: var(--text-main); border-radius: 4px; }
+
+    .panel-section {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(255, 0, 255, 0.05);
+      border: 1px solid var(--border-color);
+      padding: 15px;
+      box-shadow: inset 0 0 15px rgba(255, 0, 255, 0.2);
+    }
+    
+    .section-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      border-bottom: 1px dashed var(--text-muted);
+      padding-bottom: 5px;
+      text-shadow: 0 0 5px var(--text-muted);
+    }
+
+    .synth-btn {
+      display: block;
+      width: 100%;
+      background: linear-gradient(45deg, #1a0033, #330066);
+      color: var(--text-main);
+      border: 2px solid var(--text-main);
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      transition: all 0.1s ease;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+      text-shadow: 0 0 5px var(--text-main);
+    }
+    
+    .synth-btn:hover {
+      background: var(--text-main);
+      color: var(--bg-dark);
+      box-shadow: 0 0 20px var(--text-main);
+    }
+    
+    .synth-btn:active {
+      transform: scale(0.95);
+    }
+
+    .color-btn {
+      flex: 1;
+      padding: 15px 5px;
+      border: 2px solid #fff;
+      font-weight: bold;
+      cursor: pointer;
+      text-shadow: 1px 1px 2px #000;
+      transition: transform 0.1s;
+    }
+    .color-btn:active { transform: scale(0.9); }
+    #color-pink { background: #ff00ff; color: #fff; box-shadow: 0 0 15px #ff00ff; border-color: #ffb3ff;}
+    #color-blue { background: #00ffff; color: #000; box-shadow: 0 0 15px #00ffff; border-color: #b3ffff;}
+    #color-green { background: #39ff14; color: #000; box-shadow: 0 0 15px #39ff14; border-color: #a6ff99;}
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 0.75rem;
+      color: var(--text-main);
+    }
+    
+    input[type=range] {
+      flex: 1.5;
+      -webkit-appearance: none;
+      background: transparent;
+      margin: 0 10px;
+    }
+    input[type=range]:focus { outline: none; }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      cursor: pointer;
+      background: var(--text-muted);
+      box-shadow: 0 0 5px var(--text-muted);
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 16px;
+      width: 16px;
+      border-radius: 0;
+      background: var(--accent-green);
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -6px;
+      box-shadow: 0 0 10px var(--accent-green);
+      border: 1px solid #fff;
+    }
+
+    .val-display {
+      width: 40px;
+      text-align: right;
+      color: var(--accent-green);
+      text-shadow: 0 0 5px var(--accent-green);
+    }
+
+    textarea {
+      width: 100%;
+      height: 80px;
+      background: rgba(0,0,0,0.8);
+      color: var(--accent-green);
+      border: 1px solid var(--accent-green);
+      font-family: monospace;
+      font-size: 0.7rem;
+      resize: none;
+      padding: 5px;
+      box-sizing: border-box;
+      box-shadow: inset 0 0 10px rgba(57, 255, 20, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra Superior -->
+  <header class="topbar">
+    <div class="logo-title">
+      GRAFICACIÓN MAX
+    </div>
+  </header>
+
+  <div class="app-container">
+    
+    <!-- Area del Visor (Canvas) -->
+    <main class="canvas-container" id="canvas-container">
+      <canvas id="circlechart" width="800" height="600"></canvas>
+    </main>
+
+    <!-- Menú inferior responsivo -->
+    <div class="bottom-panel">
+      
+      <!-- Carga de Archivos -->
+      <div class="panel-section">
+        <div class="section-title">DATOS DE MALLA</div>
+        <div class="file-input-wrapper">
+          <label for="file-input-base" class="synth-btn">[+] CARGAR PIEZA BASE</label>
+          <input type="file" id="file-input-base" accept=".txt,.dat,.obj" style="display: none;" />
+        </div>
+        <div id="file-name-base" style="font-size:0.7rem; color:var(--text-muted); text-align:center;">&lt; NO LOADED DATA &gt;</div>
+        
+        <div class="file-input-wrapper" style="margin-top: 10px;">
+          <label for="file-input-movil" class="synth-btn">[+] CARGAR ENSAMBLAJE</label>
+          <input type="file" id="file-input-movil" accept=".txt,.dat,.obj" style="display: none;" />
+        </div>
+        <div id="file-name-movil" style="font-size:0.7rem; color:var(--text-muted); text-align:center;">&lt; NO LOADED DATA &gt;</div>
+      </div>
+
+      <!-- Iluminacion y Sombras -->
+      <div class="panel-section">
+         <div class="section-title">ILUMINACIÓN & SOMBRAS</div>
+         <div class="control-row">
+           <label>DIR. LUZ X</label>
+           <input type="range" id="light-dir-x" min="-1" max="1" step="0.1" value="-0.5">
+           <span class="val-display" id="val-light-dir-x">-0.5</span>
+         </div>
+         <div class="control-row">
+           <label>BRILLO BASE</label>
+           <input type="range" id="light-bright" min="-2" max="1" step="0.1" value="-1">
+           <span class="val-display" id="val-light-bright">-1.0</span>
+         </div>
+         <div class="control-row">
+           <label>RANGO SOMBRA</label>
+           <input type="range" id="light-shadow" min="0.1" max="5" step="0.1" value="2">
+           <span class="val-display" id="val-light-shadow">2.0</span>
+         </div>
+      </div>
+
+      <!-- Paleta de Colores -->
+      <div class="panel-section">
+         <div class="section-title">PALETA DE 3 COLORES</div>
+         <div style="display: flex; gap: 10px; height: 100%;">
+            <button id="color-pink" class="color-btn">NEON PINK</button>
+            <button id="color-blue" class="color-btn">CYBER BLUE</button>
+            <button id="color-green" class="color-btn">ACID GREEN</button>
+         </div>
+      </div>
+
+      <!-- Controles: Animar y Rotación -->
+      <div class="panel-section" style="align-items: center;">
+        <div class="section-title" style="width: 100%;">ROTACIÓN GIMBAL</div>
+        <button class="synth-btn" id="btn-auto-rotate" style="margin-bottom: 10px; width: 80%;">► ANIMAR</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; width: 120px;">
+          <div></div>
+          <button class="synth-btn" id="btn-rot-up" style="padding: 5px; font-size: 1rem;">▲</button>
+          <div></div>
+          <button class="synth-btn" id="btn-rot-left" style="padding: 5px; font-size: 1rem;">◄</button>
+          <div style="display: flex; justify-content: center; align-items: center; color: var(--text-muted);">●</div>
+          <button class="synth-btn" id="btn-rot-right" style="padding: 5px; font-size: 1rem;">►</button>
+          <div></div>
+          <button class="synth-btn" id="btn-rot-down" style="padding: 5px; font-size: 1rem;">▼</button>
+          <div></div>
+        </div>
+      </div>
+
+      <!-- Estadísticas y Código -->
+      <div class="panel-section">
+        <div class="section-title">TELEMETRÍA</div>
+        <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+           <span style="font-size:0.7rem;">VERTICES: <span id="stat-verts" style="color:var(--accent-green);">0</span></span>
+           <span style="font-size:0.7rem;">POLYS: <span id="stat-tris" style="color:var(--accent-green);">0</span></span>
+        </div>
+        <textarea id="raw-base" readonly placeholder="CÓDIGO BASE RAW..."></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="./dist/src/index.js" type="module"></script>
+</body>
+</html>
+"""
+with open('index.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)
